@@ -7,7 +7,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.greenlivesmatter.data.RegisterRequest
 import com.example.greenlivesmatter.data.RegistrationResult
-import com.example.greenlivesmatter.data.User
 import com.example.greenlivesmatter.network.ApiHelper
 import kotlinx.coroutines.launch
 
@@ -21,7 +20,7 @@ class RegistrationViewModel : ViewModel() {
     fun register(): Boolean {
         viewModelScope.launch {
             try {
-                val user = User(name.value, email.value, password.value)
+//                val user = User(name.value, email.value, password.value)
                 val response = ApiHelper.apiService.registerUser(RegisterRequest(email = email.value, name = name.value, password = password.value))
 
                 if (response.isSuccessful) {

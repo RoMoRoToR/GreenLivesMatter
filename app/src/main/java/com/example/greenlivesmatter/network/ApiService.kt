@@ -4,8 +4,11 @@ import com.example.greenlivesmatter.data.LoginRequest
 import com.example.greenlivesmatter.data.LoginResponse
 import com.example.greenlivesmatter.data.RegisterRequest
 import com.example.greenlivesmatter.data.RegisterResponse
+import com.example.greenlivesmatter.data.User
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.POST
 
 interface ApiService {
@@ -15,4 +18,7 @@ interface ApiService {
 
     @POST("/register")
     suspend fun registerUser(@Body request: RegisterRequest): Response<RegisterResponse>
+
+    @GET("user")
+    suspend fun getUser(@Header("x-access-token") token: String): Response<User>
 }
