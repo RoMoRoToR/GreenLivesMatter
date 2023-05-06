@@ -1,6 +1,5 @@
 package com.example.greenlivesmatter
 
-import RegistrationViewModel
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -24,6 +23,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.greenlivesmatter.ui.theme.GreenLivesMatterTheme
+import com.example.greenlivesmatter.viewmodel.RegistrationViewModel
 
 class RegistrationActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,6 +44,7 @@ class RegistrationActivity : ComponentActivity() {
 }
 @Composable
 fun RegistrationScreen(viewModel: RegistrationViewModel, onRegistered: () -> Unit) {
+
     Column(
         modifier = Modifier
             .fillMaxSize()

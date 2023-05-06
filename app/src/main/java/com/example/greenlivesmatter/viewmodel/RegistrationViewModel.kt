@@ -1,15 +1,46 @@
+package com.example.greenlivesmatter.viewmodel
+
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.greenlivesmatter.data.RegisterRequest
+import com.example.greenlivesmatter.data.RegistrationResult
+import com.example.greenlivesmatter.data.User
+import com.example.greenlivesmatter.network.ApiHelper
+import kotlinx.coroutines.launch
 
 class RegistrationViewModel : ViewModel() {
     val name = mutableStateOf("")
     val email = mutableStateOf("")
     val password = mutableStateOf("")
 
+    private val _isRegistered = MutableLiveData<RegistrationResult>()
+    val isRegistered: LiveData<RegistrationResult> = _isRegistered
     fun register(): Boolean {
-        // Здесь должна быть реализация регистрации, например, через API-запрос или другой способ
-        // В этом примере мы считаем, что регистрация успешна, если имя, email и пароль непустые
-        return name.value.isNotEmpty() && email.value.isNotEmpty() && password.value.isNotEmpty()
+        viewModelScope.launch {
+            try {
+                val user = User(name.value, email.value, password.value)
+                val response = ApiHelper.apiService.registerUser(RegisterRequest(email = email.value, name = name.value, password = password.value))
+
+                if (response.isSuccessful) {
+                    // Регистрация прошла успешно
+                    _isRegistered.value = RegistrationResult(success = true)
+                } else {
+                    // Обработка неудачной регистрации
+                    val errorMessage = when (response.code()) {
+                        409 -> "Email или имя пользователя уже зарегистрированы"
+                        else -> "Не удалось зарегистрироваться. Пожалуйста, попробуйте еще раз"
+                    }
+                    _isRegistered.value = RegistrationResult(success = false, errorMessage = errorMessage)
+                }
+            } catch (e: Exception) {
+                // Обработка ошибок, например, нет доступа к интернету
+                _isRegistered.value = RegistrationResult(success = false, errorMessage = "Произошла ошибка. Проверьте подключение к интернету и попробуйте еще раз")
+            }
+        }
+        return true
     }
 
     fun onNameChanged(newName: String) {

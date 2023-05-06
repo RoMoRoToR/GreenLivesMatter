@@ -1,56 +1,60 @@
 package com.example.greenlivesmatter
 
-import RegistrationViewModel
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.unit.dp
 import com.example.greenlivesmatter.ui.theme.GreenLivesMatterTheme
-import com.example.greenlivesmatter.viewmodel.LoginViewModel
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val loginViewModel = viewModel<LoginViewModel>()
-            val registrationViewModel = viewModel<RegistrationViewModel>()
-            val currentScreen = remember {mutableStateOf("login")}
             GreenLivesMatterTheme {
                 Surface(color = MaterialTheme.colorScheme.background) {
-                    if (currentScreen.value == "login") {
-                        LoginScreen(loginViewModel) {
-                            // Обработка успешной аутентификации, переход к другой активности, например
-                            startActivity(Intent(this, HomeActivity::class.java))
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Button(
+                            onClick = {
+                                startActivity(Intent(this@MainActivity, LoginActivity::class.java))
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Log in")
                         }
-                        Text(
-                            text = "Don't have an account? Sign up",
-                            modifier = Modifier.clickable {
-                                currentScreen.value = "registration"
-                            }
-                        )
-                    } else {
-                        RegistrationScreen(registrationViewModel) {
-                            // Обработка успешной регистрации, переход к другой активности, например
-                            startActivity(Intent(this, HomeActivity::class.java))
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Button(
+                            onClick = {
+                                startActivity(Intent(this@MainActivity, RegistrationActivity::class.java))
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Sign up")
                         }
-                        Text(
-                            text = "Already have an account? Log in",
-                            modifier = Modifier.clickable {
-                                currentScreen.value = "login"
-                            }
-                        )
                     }
                 }
             }
         }
     }
 }
-

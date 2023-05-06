@@ -1,8 +1,7 @@
 package com.example.greenlivesmatter.data
 
-data class User(
+data class RegisterRequest(
     val email: String,
-    val username: String,
+    val name: String,
     val password: String
 )
-

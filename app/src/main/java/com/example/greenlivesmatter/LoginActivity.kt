@@ -2,6 +2,7 @@ package com.example.greenlivesmatter
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
@@ -17,13 +18,17 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.greenlivesmatter.ui.theme.GreenLivesMatterTheme
 import com.example.greenlivesmatter.viewmodel.LoginViewModel
+
+
 
 class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,8 +39,10 @@ class LoginActivity : ComponentActivity() {
             GreenLivesMatterTheme {
                 Surface(color = MaterialTheme.colorScheme.background) {
                     LoginScreen(loginViewModel) {
-                        // Обработка успешной аутентификации, переход к другой активности, например
-                        startActivity(Intent(this, MainActivity::class.java))
+                        // Отображение сообщения об успешной аутентификации
+                        Toast.makeText(this, "Successfully logged in!", Toast.LENGTH_SHORT).show()
+                        // Обработка успешной аутентификации, переход к другой активности
+                        startActivity(Intent(this, HomeActivity::class.java))
                     }
                 }
             }
@@ -72,15 +79,24 @@ class LoginActivity : ComponentActivity() {
 
             Button(
                 onClick = {
-                    if (viewModel.authenticate()) {
-                        onAuthenticated()
-                    } else {
-                        // Обработка неудачной аутентификации, например, отображение сообщения об ошибке
-                    }
+                    viewModel.authenticate()
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Login")
+            }
+
+            viewModel.isAuthenticated.observeAsState(initial = null).value?.let { authenticationResult ->
+                if (authenticationResult.success) {
+                    onAuthenticated()
+                } else {
+                    // Обработка неудачной аутентификации, например, отображение сообщения об ошибке
+                    Toast.makeText(
+                        LocalContext.current,
+                        authenticationResult.errorMessage,
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
             }
         }
     }
