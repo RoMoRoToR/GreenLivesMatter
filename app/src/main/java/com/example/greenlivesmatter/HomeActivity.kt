@@ -1,5 +1,6 @@
 package com.example.greenlivesmatter
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -32,18 +33,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.greenlivesmatter.ui.theme.GreenLivesMatterTheme
 import com.example.greenlivesmatter.viewmodel.HomeViewModel
+import com.example.greenlivesmatter.viewmodel.MapViewModel
 import com.example.greenlivesmatter.viewmodel.ProfileViewModel
 import com.example.greenlivesmatter.viewmodel.SettingsViewModel
 import org.osmdroid.config.Configuration
+import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.MapEventsOverlay
+import org.osmdroid.views.overlay.Marker
 
 
 class HomeActivity : ComponentActivity() {
@@ -159,23 +165,62 @@ class HomeActivity : ComponentActivity() {
     }
 
 
-
-
-
     @Composable
     fun MapScreen() {
         val context = LocalContext.current
         val mapView = rememberMapViewWithLifecycle()
+        val mapViewModel: MapViewModel = viewModel()
+        val errorMessage by mapViewModel.errorMessage.observeAsState()
 
         val moscow = GeoPoint(55.7522, 37.6156) // координаты Москвы
 
-        AndroidView(factory = { mapView }) {
-            it.setTileSource(TileSourceFactory.MAPNIK)
-            it.setMultiTouchControls(true)
-            it.controller.setZoom(14.0)
-            it.controller.setCenter(moscow)
+        if (errorMessage != null) {
+            Text(
+                text = errorMessage!!,
+                color = MaterialTheme.colorScheme.onError,
+                modifier = Modifier.padding(8.dp)
+            )
+        }
+
+        AndroidView(factory = { mapView }) { mapView ->
+            mapView.setTileSource(TileSourceFactory.MAPNIK)
+            mapView.setMultiTouchControls(true)
+            mapView.controller.setZoom(14.0)
+            mapView.controller.setCenter(moscow)
+
+            val mapEventsReceiver = object : MapEventsReceiver {
+                override fun singleTapConfirmedHelper(p: GeoPoint?): Boolean {
+                    return false
+                }
+
+                override fun longPressHelper(p: GeoPoint?): Boolean {
+                    p?.let { newMarkerPosition ->
+                        addMarker(context, mapView, newMarkerPosition)
+
+                        // Добавление нового маркера на сервер
+                        mapViewModel.addTreeMarker(newMarkerPosition.latitude, newMarkerPosition.longitude)
+                    }
+                    return true
+                }
+            }
+
+            val mapEventsOverlay = MapEventsOverlay(mapEventsReceiver)
+            mapView.overlays.add(mapEventsOverlay)
         }
     }
+
+
+
+    fun addMarker(context: Context, mapView: MapView, position: GeoPoint) {
+        val marker = Marker(mapView)
+        marker.position = position
+        marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+        marker.title = "New Marker"
+
+        mapView.overlays.add(marker)
+        mapView.invalidate()
+    }
+
 
     @Composable
     fun rememberMapViewWithLifecycle(): MapView {
