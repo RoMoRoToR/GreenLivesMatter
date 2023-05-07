@@ -18,9 +18,6 @@ android {
         vectorDrawables {
             useSupportLibrary true
         }
-//        manifestPlaceholders = [
-//                "google_maps_key": "AIzaSyD_B0atzzdmeE6oQVyTcYX6CFJ8OJ2Dgck"
-//        ]
     }
 
 
@@ -68,10 +65,8 @@ dependencies {
     debugImplementation "androidx.compose.ui:ui-test-manifest:$compose_version"
     implementation"androidx.compose.material:material:$compose_version"
 
-    //Google API maps
-    implementation 'com.google.android.gms:play-services-maps:18.0.2'
-    implementation 'com.google.maps.android:maps-ktx:3.2.0'
-    implementation 'com.google.maps.android:maps-compose:1.0.1'
+    // osmdroid
+    implementation 'org.osmdroid:osmdroid-android:6.1.11'
 
 
 
@@ -79,6 +74,8 @@ dependencies {
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
     implementation 'com.squareup.okhttp3:okhttp:4.9.0'
+    implementation 'com.squareup.moshi:moshi:1.12.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.9.1'
 
     implementation 'androidx.compose.runtime:runtime:1.2.0-alpha02' // или другая актуальная версия
     implementation 'androidx.compose.runtime:runtime-livedata:1.2.0-alpha02' // или другая актуальная версия

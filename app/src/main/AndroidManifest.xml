@@ -16,11 +16,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.GreenLivesMatter"
         tools:targetApi="31"
-
         android:usesCleartextTraffic="true">
-        <meta-data
-            android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyD_B0atzzdmeE6oQVyTcYX6CFJ8OJ2Dgck" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

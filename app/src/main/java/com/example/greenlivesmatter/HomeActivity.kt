@@ -23,11 +23,15 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -36,7 +40,10 @@ import com.example.greenlivesmatter.ui.theme.GreenLivesMatterTheme
 import com.example.greenlivesmatter.viewmodel.HomeViewModel
 import com.example.greenlivesmatter.viewmodel.ProfileViewModel
 import com.example.greenlivesmatter.viewmodel.SettingsViewModel
-
+import org.osmdroid.config.Configuration
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.MapView
 
 
 class HomeActivity : ComponentActivity() {
@@ -93,7 +100,7 @@ class HomeActivity : ComponentActivity() {
                 startDestination = Screen.Map.route,
                 modifier = Modifier.padding(innerPadding)
             ) {
-                composable(Screen.Map.route) { MapElement() }
+                composable(Screen.Map.route) { MapScreen() }
                 composable(Screen.Profile.route) { ProfileScreen() } // Замените на ваш компонуемый профиль
                 composable(Screen.Settings.route) { SettingsScreen(settingsViewModel) }}
         }
@@ -144,9 +151,9 @@ class HomeActivity : ComponentActivity() {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                Text(text = "Username: ${it.username}", style = MaterialTheme.typography.bodySmall)
+                Text(text = "Username: ${it.username}", style = MaterialTheme.typography.bodyMedium)
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(text = "Email: ${it.email}", style = MaterialTheme.typography.bodySmall)
+                Text(text = "Email: ${it.email}", style = MaterialTheme.typography.bodyMedium)
             }
         }
     }
@@ -155,10 +162,43 @@ class HomeActivity : ComponentActivity() {
 
 
 
-    private @Composable
-    fun MapElement() {
+    @Composable
+    fun MapScreen() {
+        val context = LocalContext.current
+        val mapView = rememberMapViewWithLifecycle()
 
+        val moscow = GeoPoint(55.7522, 37.6156) // координаты Москвы
+
+        AndroidView(factory = { mapView }) {
+            it.setTileSource(TileSourceFactory.MAPNIK)
+            it.setMultiTouchControls(true)
+            it.controller.setZoom(14.0)
+            it.controller.setCenter(moscow)
+        }
     }
+
+    @Composable
+    fun rememberMapViewWithLifecycle(): MapView {
+        val context = LocalContext.current
+        val mapView = remember {
+            Configuration.getInstance().load(context, context.getSharedPreferences("osmdroid", MODE_PRIVATE))
+            MapView(context).apply {
+                setTileSource(TileSourceFactory.MAPNIK)
+                setMultiTouchControls(true)
+            }
+        }
+
+        // Следим за жизненным циклом
+        DisposableEffect(key1 = mapView) {
+            mapView.onResume()
+            onDispose {
+                mapView.onPause()
+            }
+        }
+
+        return mapView
+    }
+
 }
 
 
