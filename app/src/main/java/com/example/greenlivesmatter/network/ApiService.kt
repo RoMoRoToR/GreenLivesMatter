@@ -26,6 +26,9 @@ interface ApiService {
     @GET("user")
     suspend fun getUser(@Header("x-access-token") token: String): Response<User>
 
+//    @GET("tree_markers")
+//    suspend fun getTreeMarkers(@Header("x-access-token") token: String): Response<List<TreeMarker>>
+
     @GET("tree_markers")
     suspend fun getTreeMarkers(): Response<List<TreeMarker>>
 

@@ -25,6 +25,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
@@ -33,11 +34,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.greenlivesmatter.network.ApiHelper
 import com.example.greenlivesmatter.ui.theme.GreenLivesMatterTheme
 import com.example.greenlivesmatter.viewmodel.HomeViewModel
 import com.example.greenlivesmatter.viewmodel.MapViewModel
@@ -55,6 +56,8 @@ import org.osmdroid.views.overlay.Marker
 class HomeActivity : ComponentActivity() {
     private val homeViewModel by viewModels<HomeViewModel>()
     private val settingsViewModel by viewModels<SettingsViewModel>()
+    private val apiService = ApiHelper.apiService
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -169,17 +172,24 @@ class HomeActivity : ComponentActivity() {
     fun MapScreen() {
         val context = LocalContext.current
         val mapView = rememberMapViewWithLifecycle()
-        val mapViewModel: MapViewModel = viewModel()
-        val errorMessage by mapViewModel.errorMessage.observeAsState()
+//        val errorMessage by mapViewModel.errorMessage.observeAsState()
+        val mapViewModel = remember { MapViewModel(context) }
+
 
         val moscow = GeoPoint(55.7522, 37.6156) // координаты Москвы
 
-        if (errorMessage != null) {
-            Text(
-                text = errorMessage!!,
-                color = MaterialTheme.colorScheme.onError,
-                modifier = Modifier.padding(8.dp)
-            )
+        val treeMarkers by mapViewModel.treeMarkers.observeAsState(emptyList())
+
+//        if (errorMessage != null) {
+//            Text(
+//                text = errorMessage!!,
+//                color = MaterialTheme.colorScheme.onError,
+//                modifier = Modifier.padding(8.dp)
+//            )
+//        }
+        //Вызов fetchTreeMarkers
+        LaunchedEffect(key1 = Unit) {
+            mapViewModel.fetchTreeMarkers()
         }
 
         AndroidView(factory = { mapView }) { mapView ->
@@ -187,6 +197,16 @@ class HomeActivity : ComponentActivity() {
             mapView.setMultiTouchControls(true)
             mapView.controller.setZoom(14.0)
             mapView.controller.setCenter(moscow)
+
+            // Добавление маркеров на карту
+            treeMarkers.forEach { marker ->
+                addMarker(context, mapView, GeoPoint(marker.latitude, marker.longitude))
+            }
+
+//            treeMarkers.forEach { marker ->
+//                addMarker(context, mapView, GeoPoint(marker.latitude, marker.longitude))
+//            }
+
 
             val mapEventsReceiver = object : MapEventsReceiver {
                 override fun singleTapConfirmedHelper(p: GeoPoint?): Boolean {
@@ -206,8 +226,10 @@ class HomeActivity : ComponentActivity() {
 
             val mapEventsOverlay = MapEventsOverlay(mapEventsReceiver)
             mapView.overlays.add(mapEventsOverlay)
+
         }
     }
+
 
 
 
@@ -220,7 +242,6 @@ class HomeActivity : ComponentActivity() {
         mapView.overlays.add(marker)
         mapView.invalidate()
     }
-
 
     @Composable
     fun rememberMapViewWithLifecycle(): MapView {
