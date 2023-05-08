@@ -21,7 +21,7 @@ class RegistrationViewModel : ViewModel() {
         viewModelScope.launch {
             try {
 //                val user = User(name.value, email.value, password.value)
-                val response = ApiHelper.apiService.registerUser(RegisterRequest(email = email.value, name = name.value, password = password.value))
+                val response = ApiHelper.apiService.registerUser(RegisterRequest(email = email.value, username = name.value, password = password.value))
 
                 if (response.isSuccessful) {
                     // Регистрация прошла успешно

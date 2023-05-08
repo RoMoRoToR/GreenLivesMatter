@@ -34,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -44,6 +45,7 @@ import com.example.greenlivesmatter.viewmodel.HomeViewModel
 import com.example.greenlivesmatter.viewmodel.MapViewModel
 import com.example.greenlivesmatter.viewmodel.ProfileViewModel
 import com.example.greenlivesmatter.viewmodel.SettingsViewModel
+import kotlinx.coroutines.launch
 import org.osmdroid.config.Configuration
 import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
@@ -200,7 +202,13 @@ class HomeActivity : ComponentActivity() {
 
             // Добавление маркеров на карту
             treeMarkers.forEach { marker ->
-                addMarker(context, mapView, GeoPoint(marker.latitude, marker.longitude))
+                addMarker(
+                    context,
+                    mapView,
+                    GeoPoint(marker.latitude, marker.longitude),
+                    mapViewModel,
+                    marker.id // передайте идентификатор маркера
+                )
             }
 
 //            treeMarkers.forEach { marker ->
@@ -215,13 +223,17 @@ class HomeActivity : ComponentActivity() {
 
                 override fun longPressHelper(p: GeoPoint?): Boolean {
                     p?.let { newMarkerPosition ->
-                        addMarker(context, mapView, newMarkerPosition)
-
-                        // Добавление нового маркера на сервер
-                        mapViewModel.addTreeMarker(newMarkerPosition.latitude, newMarkerPosition.longitude)
+                        // Запуск корутины для добавления маркера на сервер
+                        lifecycleScope.launch {
+                            val markerId = mapViewModel.addTreeMarker(newMarkerPosition.latitude, newMarkerPosition.longitude)
+                            markerId?.let {
+                                addMarker(context, mapView, newMarkerPosition, mapViewModel, it)
+                            }
+                        }
                     }
                     return true
                 }
+
             }
 
             val mapEventsOverlay = MapEventsOverlay(mapEventsReceiver)
@@ -232,16 +244,25 @@ class HomeActivity : ComponentActivity() {
 
 
 
-
-    fun addMarker(context: Context, mapView: MapView, position: GeoPoint) {
+    fun addMarker(context: Context, mapView: MapView, position: GeoPoint, mapViewModel: MapViewModel, markerId: Int) {
         val marker = Marker(mapView)
         marker.position = position
         marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-        marker.title = "New Marker"
+        marker.title = "New Tree"
+        // Установите слушатель нажатий на маркер
+        marker.setOnMarkerClickListener { marker, _ ->
+            // Вызовите функции toggleTreeMarkerDeadStatus и deleteTreeMarker здесь
+            mapViewModel.toggleTreeMarkerDeadStatus(markerId)
+            mapViewModel.deleteTreeMarker(markerId, marker, mapView)
 
+            // Верните true, если вы хотите, чтобы дальнейшие слушатели событий не обрабатывали это событие
+            true
+        }
         mapView.overlays.add(marker)
         mapView.invalidate()
     }
+
+
 
     @Composable
     fun rememberMapViewWithLifecycle(): MapView {

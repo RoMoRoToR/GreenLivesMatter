@@ -12,30 +12,33 @@ import com.example.greenlivesmatter.data.TreeMarkerRequest
 import com.example.greenlivesmatter.data.TreeMarkerResponse
 import com.example.greenlivesmatter.network.ApiHelper
 import kotlinx.coroutines.launch
+import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.Marker
 import retrofit2.Response
 
 class MapViewModel(context: Context) : ViewModel() {
     private val apiService = ApiHelper.apiService
     val errorMessage = MutableLiveData<String?>(null)
 
-    fun addTreeMarker(latitude: Double, longitude: Double, isDead: Boolean = false) {
-        viewModelScope.launch {
-            try {
-                val response = sendAddMarkerRequest(latitude, longitude, false)
-                if (response.isSuccessful) {
-                    // Маркер успешно добавлен на сервер
-                    val markerData = response.body()
-                    // Вы можете использовать markerData для дальнейших действий, например, для отображения данных маркера
-                } else {
-                    // Обработка ошибок сервера
-                    errorMessage.postValue("Ошибка сервера: ${response.code()}")
-                }
-            } catch (e: Exception) {
-                // Обработка ошибок сети
-                errorMessage.postValue("Ошибка сети: ${e.message}")
+    suspend fun addTreeMarker(latitude: Double, longitude: Double, isDead: Boolean = false): Int? {
+        return try {
+            val response = sendAddMarkerRequest(latitude, longitude, false)
+            if (response.isSuccessful) {
+                // Маркер успешно добавлен на сервер
+                val markerData = response.body()
+                markerData?.id // Возвращает идентификатор нового маркера
+            } else {
+                // Обработка ошибок сервера
+                errorMessage.postValue("Ошибка сервера: ${response.code()}")
+                null
             }
+        } catch (e: Exception) {
+            // Обработка ошибок сети
+            errorMessage.postValue("Ошибка сети: ${e.message}")
+            null
         }
     }
+
 
     private val _treeMarkers = MutableLiveData<List<TreeMarkerResponse>>()
     val treeMarkers: LiveData<List<TreeMarkerResponse>>
@@ -72,6 +75,51 @@ class MapViewModel(context: Context) : ViewModel() {
     }
 
 
+    fun toggleTreeMarkerDeadStatus(markerId: Int) {
+        viewModelScope.launch {
+            try {
+                val response = apiService.toggleTreeMarkerDeadStatus(markerId)
+                if (response.isSuccessful) {
+                    // Маркер успешно обновлен на сервере
+                    val markerData = response.body()
+                    // Вы можете использовать markerData для дальнейших действий, например, для отображения данных маркера
+                } else {
+                    // Обработка ошибок сервера
+                    errorMessage.postValue("Ошибка сервера: ${response.code()}")
+                }
+            } catch (e: Exception) {
+                // Обработка ошибок сети
+                errorMessage.postValue("Ошибка сети: ${e.message}")
+            }
+        }
+    }
+
+    fun deleteTreeMarker(markerId: Int, marker: Marker, mapView: MapView) {
+        viewModelScope.launch {
+            try {
+                val response = sendDeleteMarkerRequest(markerId)
+                if (response.isSuccessful) {
+                    // Удаляем маркер с карты
+                    marker.closeInfoWindow()
+                    mapView.overlays.remove(marker)
+                    mapView.invalidate()
+
+                    // Маркер успешно удален с сервера
+                } else {
+                    // Обработка ошибок сервера
+                    errorMessage.postValue("Ошибка сервера: ${response.code()}")
+                }
+            } catch (e: Exception) {
+                // Обработка ошибок сети
+                errorMessage.postValue("Ошибка сети: ${e.message}")
+            }
+        }
+    }
+
+    private suspend fun sendDeleteMarkerRequest(markerId: Int): Response<Unit> {
+        return apiService.deleteTreeMarker(markerId)
+    }
+
 
 
     private suspend fun sendAddMarkerRequest(
@@ -80,5 +128,6 @@ class MapViewModel(context: Context) : ViewModel() {
         val treeMarkerRequest = TreeMarkerRequest(latitude, longitude, isDead)
         return apiService.addTreeMarker(treeMarkerRequest)
     }
+
 }
 

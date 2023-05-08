@@ -13,6 +13,7 @@ import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Path
 
 interface ApiService {
@@ -26,15 +27,15 @@ interface ApiService {
     @GET("user")
     suspend fun getUser(@Header("x-access-token") token: String): Response<User>
 
-//    @GET("tree_markers")
-//    suspend fun getTreeMarkers(@Header("x-access-token") token: String): Response<List<TreeMarker>>
-
     @GET("tree_markers")
     suspend fun getTreeMarkers(): Response<List<TreeMarker>>
 
     @POST("tree_markers")
     suspend fun addTreeMarker(@Body treeMarker: TreeMarkerRequest): Response<TreeMarker>
 
-    @DELETE("tree_markers/{marker_id}")
-    suspend fun deleteTreeMarker(@Path("marker_id") markerId: Int): Response<String>
+    @PUT("tree_markers/{marker_id}/toggle_dead")
+    suspend fun toggleTreeMarkerDeadStatus(@Path("marker_id") markerId: Int): Response<TreeMarker>
+
+    @DELETE("tree_markers/{id}")
+    suspend fun deleteTreeMarker(@Path("id") markerId: Int): Response<Unit>
 }
