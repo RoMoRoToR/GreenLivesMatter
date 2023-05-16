@@ -57,7 +57,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     // Обновление данных пользователя
     fun updateUserData(updatedUser: User) {
         viewModelScope.launch {
-            // Здесь ваш код для обновления данных пользователя на сервере
+            // Здесь код для обновления данных пользователя на сервере
             // _user.value = updatedUser
         }
     }

@@ -19,8 +19,6 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Switch
 import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -76,7 +74,7 @@ class HomeActivity : ComponentActivity() {
         val navController = rememberNavController()
         Scaffold(
             bottomBar = {
-                val items = listOf(
+                listOf(
                     Screen.Map,
                     Screen.Profile,
                     Screen.Settings
@@ -87,10 +85,12 @@ class HomeActivity : ComponentActivity() {
                 ) {
                     val navBackStackEntry by navController.currentBackStackEntryAsState()
                     val currentRoute = navBackStackEntry?.destination?.route
+                    val items = listOf(Screen.Map, Screen.Settings, Screen.Profile)
+
 
                     items.forEach { screen ->
                         BottomNavigationItem(
-                            icon = { Icon(Icons.Default.Home, contentDescription = null) }, // Замените иконку в соответствии с каждым экраном
+                            icon = { Icon(screen.icon, contentDescription = null) },
                             label = { Text(screen.route.capitalize()) },
                             selected = currentRoute == screen.route,
                             onClick = {
@@ -126,13 +126,10 @@ class HomeActivity : ComponentActivity() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(text = "Settings Screen", style = MaterialTheme.typography.bodyMedium)
-            Spacer(modifier = Modifier.height(8.dp))
-
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Темная тема: ")
+                Text("Dark theme: ")
                 Spacer(modifier = Modifier.width(8.dp))
                 Switch(
                     checked = viewModel.isDarkTheme.value,

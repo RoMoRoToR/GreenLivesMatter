@@ -2,10 +2,12 @@ package com.example.greenlivesmatter.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+// Цвета для темной темы (тематика города)
+val DarkBlue900 = Color(0xFF263238) // Темно-синий
+val DarkGrey800 = Color(0xFF424242) // Темно-серый
+val DarkBlue700 = Color(0xFF455A64) // Средне-темно-синий
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+// Цвета для светлой темы (тематика зелени)
+val LightGreen600 = Color(0xFF43A047) // Темно-зеленый
+val LightGreen300 = Color(0xFF81C784) // Средне-зеленый
+val LightGreen100 = Color(0xFFC8E6C9) // Светло-зеленый
