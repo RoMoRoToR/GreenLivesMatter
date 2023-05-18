@@ -38,4 +38,7 @@ interface ApiService {
 
     @DELETE("tree_markers/{id}")
     suspend fun deleteTreeMarker(@Path("id") markerId: Int): Response<Unit>
+
+    @POST("/logout")
+    suspend fun logoutUser(@Header("x-access-token") token: String): Response<Unit>
 }

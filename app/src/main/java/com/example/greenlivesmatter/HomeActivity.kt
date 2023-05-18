@@ -16,9 +16,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Switch
 import androidx.compose.material.Text
+import androidx.compose.material.TopAppBar
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -73,13 +77,18 @@ class HomeActivity : ComponentActivity() {
     fun HomeScreen(viewModel: HomeViewModel, settingsViewModel: SettingsViewModel) {
         val navController = rememberNavController()
         Scaffold(
-            bottomBar = {
-                listOf(
-                    Screen.Map,
-                    Screen.Profile,
-                    Screen.Settings
+            topBar = {
+                TopAppBar(
+                    backgroundColor = MaterialTheme.colorScheme.surface,
+                    title = { Text(text = "GreenLivesMatter") },
+                    actions = {
+                        IconButton(onClick = {viewModel.logout(this@HomeActivity)}) {
+                            Icon(Icons.Filled.ExitToApp, contentDescription = "Logout")
+                        }
+                    }
                 )
-
+            },
+            bottomBar = {
                 BottomNavigation(
                     backgroundColor = MaterialTheme.colorScheme.surface,
                 ) {
@@ -113,9 +122,11 @@ class HomeActivity : ComponentActivity() {
             ) {
                 composable(Screen.Map.route) { MapScreen() }
                 composable(Screen.Profile.route) { ProfileScreen() } // Замените на ваш компонуемый профиль
-                composable(Screen.Settings.route) { SettingsScreen(settingsViewModel) }}
+                composable(Screen.Settings.route) { SettingsScreen(settingsViewModel) }
+            }
         }
     }
+
 
     @Composable
     fun SettingsScreen(viewModel: SettingsViewModel) {

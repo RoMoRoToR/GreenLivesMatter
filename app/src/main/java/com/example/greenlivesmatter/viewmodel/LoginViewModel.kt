@@ -29,7 +29,14 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
             )
             return false
         }
-
+        val emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+"
+        if (!email.value.matches(emailPattern.toRegex())) {
+            _isAuthenticated.value = AuthenticationResult(
+                success = false,
+                errorMessage = "Неправильный формат Email"
+            )
+            return false
+        }
         viewModelScope.launch {
             try {
                 val response = ApiHelper.apiService.loginUser(LoginRequest(email = email.value, password = password.value))
