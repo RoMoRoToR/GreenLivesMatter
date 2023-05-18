@@ -23,6 +23,8 @@ import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -55,6 +57,7 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.MapEventsOverlay
 import org.osmdroid.views.overlay.Marker
+import kotlin.system.exitProcess
 
 
 class HomeActivity : ComponentActivity() {
@@ -82,7 +85,7 @@ class HomeActivity : ComponentActivity() {
                     backgroundColor = MaterialTheme.colorScheme.surface,
                     title = { Text(text = "GreenLivesMatter") },
                     actions = {
-                        IconButton(onClick = {viewModel.logout(this@HomeActivity)}) {
+                        IconButton(onClick = { exitProcess(503) }) {
                             Icon(Icons.Filled.ExitToApp, contentDescription = "Logout")
                         }
                     }
@@ -121,7 +124,7 @@ class HomeActivity : ComponentActivity() {
                 modifier = Modifier.padding(innerPadding)
             ) {
                 composable(Screen.Map.route) { MapScreen() }
-                composable(Screen.Profile.route) { ProfileScreen() } // Замените на ваш компонуемый профиль
+                composable(Screen.Profile.route) { ProfileScreen() }
                 composable(Screen.Settings.route) { SettingsScreen(settingsViewModel) }
             }
         }
@@ -184,19 +187,9 @@ class HomeActivity : ComponentActivity() {
         val mapView = rememberMapViewWithLifecycle()
 //        val errorMessage by mapViewModel.errorMessage.observeAsState()
         val mapViewModel = remember { MapViewModel(context) }
-
-
         val moscow = GeoPoint(55.7522, 37.6156) // координаты Москвы
-
         val treeMarkers by mapViewModel.treeMarkers.observeAsState(emptyList())
 
-//        if (errorMessage != null) {
-//            Text(
-//                text = errorMessage!!,
-//                color = MaterialTheme.colorScheme.onError,
-//                modifier = Modifier.padding(8.dp)
-//            )
-//        }
         //Вызов fetchTreeMarkers
         LaunchedEffect(key1 = Unit) {
             mapViewModel.fetchTreeMarkers()
@@ -292,6 +285,35 @@ class HomeActivity : ComponentActivity() {
         }
 
         return mapView
+    }
+    @Composable
+    fun ShowMarkerStatusDialog(
+        showDialog: Boolean,
+        onClose: () -> Unit,
+        onLiveSelected: () -> Unit,
+        onDeadSelected: () -> Unit
+    ) {
+        if (showDialog) {
+            AlertDialog(
+                onDismissRequest = { onClose() },
+                title = { Text("Select Tree Status") },
+                text = {
+                    Column {
+                        Button(onClick = { onLiveSelected() }) {
+                            Text("Live")
+                        }
+                        Button(onClick = { onDeadSelected() }) {
+                            Text("Dead")
+                        }
+                    }
+                },
+                confirmButton = {
+                    Button(onClick = { onClose() }) {
+                        Text("Cancel")
+                    }
+                }
+            )
+        }
     }
 
 }
